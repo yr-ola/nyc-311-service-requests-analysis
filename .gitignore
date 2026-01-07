@@ -1,0 +1,58 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
+
+# Ignore all SQLite databases (including those in notebooks/)
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================
+# Data files (large / raw)
+# =========================
+*.csv
+*.tsv
+*.parquet
+*.feather
+
+# =========================
+# OS / Editor junk
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Build / Cache
+# =========================
+.cache/
+.pytest_cache/
+
+# =========================
+# Optional: ignore generated profiling outputs (keep if desired)
+# =========================
+# Uncomment if you decide NOT to version profiling HTML
+# reports/*.html
+
+# =========================
+# Optional: ignore PDF reports (keep if generated externally)
+# =========================
+# reports/*.pdf

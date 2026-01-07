@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC 311 Service Requests - Data Profiling Report</title>
+    <style>
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .meta-info {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            border-bottom: 3px solid #1e3c72;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .meta-item {
+            text-align: center;
+        }
+        
+        .meta-label {
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .meta-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section-number {
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .section h2 {
+            color: #1e3c72;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .section h3 {
+            color: #2a5298;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        ul li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight-box {
+            background: #f0f7ff;
+            border-left: 4px solid #1e3c72;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .info-card h4 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .variable-list {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .variable-list ul {
+            list-style-type: none;
+            margin: 0;
+        }
+        
+        .variable-list li {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .variable-list li:last-child {
+            border-bottom: none;
+        }
+        
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        footer p {
+            margin-bottom: 10px;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 30px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .toc h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1e3c72;
+            padding-bottom: 10px;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            margin: 0;
+        }
+        
+        .toc li {
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .toc li:last-child {
+            border-bottom: none;
+        }
+        
+        .toc a {
+            color: #2a5298;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .toc a:hover {
+            color: #1e3c72;
+        }
+        
+        figure {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        figure img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        figcaption {
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+            padding: 0 20px;
+        } 
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NYC 311 Service Requests</h1>
+            <p>A Detailed Look at the Data</p>
+        </header>
+        
+        <div class="meta-info">
+            <div class="meta-item">
+                <div class="meta-label">Records</div>
+                <div class="meta-value">5,000,000</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Variables</div>
+                <div class="meta-value">12</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Time Period</div>
+                <div class="meta-value">2010 – 2022</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Report Version</div>
+                <div class="meta-value">1.0</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="toc">
+                <h2>Table of Contents</h2>
+                <ul>
+                    <li><a href="#section1">1. Dataset Identification</a></li>
+                    <li><a href="#section2">2. Executive Summary</a></li>
+                    <li><a href="#section3">3. Dataset Overview</a></li>
+                    <li><a href="#section4">4. Schema and Metadata Summary</a></li>
+                    <li><a href="#section5">5. Data Types and Structural Validation</a></li>
+                    <li><a href="#section6">6. Missing Data Analysis</a></li>
+                    <li><a href="#section7">7. Duplicate Analysis</a></li>
+                    <li><a href="#section8">8. Univariate Analysis</a></li>
+                    <li><a href="#section9">9. Value Distribution and Frequency Analysis</a></li>
+                    <li><a href="#section10">10. Outlier and Anomaly Detection</a></li>
+                    <li><a href="#section11">11. Data Consistency and Validity Checks</a></li>
+                    <li><a href="#section12">12. Correlation and Relationship Analysis</a></li>
+                    <li><a href="#section13">13. Target Variable Analysis</a></li>
+                    <li><a href="#section14">14. Data Quality Summary</a></li>
+                    <li><a href="#section15">15. Risks, Limitations, and Assumptions</a></li>
+                    <li><a href="#section16">16. Recommendations and Next Steps</a></li>
+                    <li><a href="#section17">17. Appendix</a></li>
+                </ul>
+            </div>
+            
+            <div id="section1" class="section">
+                <div class="section-number">Section 1</div>
+                <h2>Dataset Identification</h2>
+                
+                <h3>Dataset Name</h3>
+                <p>NYC 311 Service Requests Dataset (Sampled Portion)</p>
+                
+                <h3>Dataset Description</h3>
+                <p>This dataset tracks non-emergency service requests submitted by New Yorkers through the 311 system. It covers a range of issues like noise complaints, illegal parking, sanitation problems, street conditions, and other city service concerns.</p>
+                <p>Each record includes details about the complaint, the date it was submitted, location, the responsible agency, and how the issue was resolved. For this report, we used a large but manageable subset to make profiling and analysis easier while keeping it representative of real-world data.</p>
+                
+                <h3>Data Source</h3>
+                <div class="highlight-box">
+                    <p><strong>Source:</strong> New York City Open Data Portal – NYC 311 Service Requests</p>
+                    <p><strong>Original dataset:</strong> 311 Service Requests from 2010 to Present</p>
+                    <p><strong>Access:</strong> NYC Open Data / Kaggle</p>
+                </div>
+                
+                <h3>Time Period Covered</h3>
+                <p>The dataset spans 2010 – 2022, though the exact years depend on the sampled records. It covers multiple years of reporting activity.</p>
+                
+                <h3>Dataset Size</h3>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>Number of Records</h4>
+                        <p>5 million rows</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Number of Variables</h4>
+                        <p>12 columns</p>
+                    </div>
+                </div>
+                
+                <h3>Variables Included</h3>
+                <div class="variable-list">
+                    <ul>
+                        <li>Unique Key</li>
+                        <li>Created Date</li>
+                        <li>Closed Date</li>
+                        <li>Complaint Type</li>
+                        <li>Descriptor</li>
+                        <li>Status</li>
+                        <li>Resolution Description</li>
+                        <li>Borough</li>
+                        <li>Incident Zip</li>
+                        <li>Latitude</li>
+                        <li>Longitude</li>
+                        <li>Agency Name</li>
+                    </ul>
+                </div>
+                
+                <h3>Profiling Metadata</h3>
+                <p><strong>Report generated on:</strong> [Insert date at submission]</p>
+                <p><strong>Author / System:</strong> Generated with Python (Pandas, SQLite) in a Jupyter Notebook as part of structured data analysis</p>
+                <p><strong>Report version:</strong> 1.0</p>
+            </div>
+            
+            <div id="section2" class="section">
+                <div class="section-number">Section 2</div>
+                <h2>Executive Summary</h2>
+                <p>This report looks at a large subset of NYC 311 Service Requests, which include non-emergency complaints submitted by residents across New York City. It captures information like complaint types, submission and closure dates, locations, boroughs, responsible agencies, and resolution details.</p>
+                <p>We analyzed 5 million records with 12 variables, covering several years of reporting and reflecting how residents typically submit complaints in a big city.</p>
+                <p>The dataset is rich and large enough for exploration, visualization, and basic statistical modeling. Some data quality issues were noted, such as missing closure dates, incomplete location info, and inconsistencies in complaint types or borough names.</p>
+                <p>Duplicates were mostly handled during SQL ingestion, though some logical duplicates exist when multiple complaints describe the same issue. Temporal fields needed careful parsing to ensure accurate response-time analysis.</p>
+            </div>
+            
+            <div id="section3" class="section">
+                <div class="section-number">Section 3</div>
+                <h2>Dataset Overview</h2>
+                <p>The dataset is a sampled portion of NYC 311 Service Requests from NYC Open Data. It includes 5 million rows and 12 columns, representing a typical large public sector dataset.</p>
+                <p>Originally in CSV format, the data was loaded into SQLite for structured querying and preprocessing. All analysis used a single table (<code>nyc311_raw</code>) with no joins required.</p>
+                <p>The <em>Unique Key</em> column serves as a logical identifier for each complaint. There are no explicit foreign keys.</p>
+                <p>Each row represents a single 311 complaint, including submission details, status, location, and resolution. The unit of observation is an individual service request.</p>
+                
+                <figure>
+                    <img src="dataset_pipeline.png" alt="Data Processing Pipeline">
+                    <figcaption>Figure 3.1: How data moves from raw CSV to SQLite and then to a cleaned Python dataframe for analysis.</figcaption>
+                </figure>
+            </div>
+            
+            <div id="section4" class="section">
+                <div class="section-number">Section 4</div>
+                <h2>Schema and Metadata Summary</h2>
+                <p>The dataset includes dates, categories, text, numbers, and location info.</p>
+                <p>Key points about the schema:</p>
+                <ul>
+                    <li>Each complaint has a unique identifier</li>
+                    <li>Created and closed timestamps</li>
+                    <li>Complaint type and descriptor fields</li>
+                    <li>Status, borough, and agency name</li>
+                    <li>Location: ZIP code, latitude, longitude</li>
+                    <li>Free-text resolution description</li>
+                </ul>
+                <p>Data types were inferred from the CSV, then validated and cleaned in Python. Dates were parsed, numbers coerced where necessary, and categories standardized. Some columns can be null, especially those related to closures or geographic info.</p>
+                <p>Expected values include valid NYC borough names, coordinates within NYC bounds, and created dates that come before closed dates.</p>
+                
+                <figure>
+                    <img src="column_data_types.png" alt="Column Data Types Distribution">
+                    <figcaption>Figure 4.1: Column types across 12 variables, showing dates, categories, numbers, and location fields.</figcaption>
+                </figure>
+            </div>
+            
+            <div id="section5" class="section">
+                <div class="section-number">Section 5</div>
+                <h2>Data Types and Structural Validation</h2>
+                <p>Initial checks found some common real-world inconsistencies.</p>
+                <p>Dates were stored as strings and had to be converted. Some entries were missing or malformed and were set to null.</p>
+                <p>Latitude, longitude, and ZIP codes had mixed formats and missing values. ZIP codes were treated as categorical due to leading zeros and occasional non-numeric values.</p>
+                <p>Text fields were mostly fine, just varied in length and formatting. After cleaning, all columns had consistent data types.</p>
+            </div>
+            
+            <div id="section6" class="section">
+                <div class="section-number">Section 6</div>
+                <h2>Missing Data Analysis</h2>
+                <p>Missing values appear in several columns.</p>
+                <p>Missing data is mostly concentrated in specific fields. Closure-related fields are often missing because some complaints are still open. Latitude, longitude, and ZIP code are missing in some rows, probably due to incomplete reporting.</p>
+                <p>Patterns suggest a mix of predictable missing data (like open complaints missing closure dates) and random missingness (like missing coordinates). Columns with significant missing data were flagged, and we documented whether to keep, fill, or exclude them depending on analysis needs.</p>
+                
+                <figure>
+                    <img src="missing_percentage_by_column.png" alt="Missing Data Percentage by Column">
+                    <figcaption>Figure 6.1: Missing values per column, showing closure and geographic fields are the most incomplete.</figcaption>
+                </figure>
+                
+                <figure>
+                    <img src="missing_data_heatmap.png" alt="Missing Data Pattern Heatmap">
+                    <figcaption>Figure 6.2: Heatmap showing patterns of missing data, highlighting both systematic and random gaps.</figcaption>
+                </figure>
+            </div>
+            
+            <div id="section7" class="section">
+                <div class="section-number">Section 7</div>
+                <h2>Duplicate Analysis</h2>
+                <p>We looked for both exact and logical duplicates.</p>
+                <p>Exact duplicates were very few after SQL ingestion. The <em>Unique Key</em> confirmed most records are unique.</p>
+                <p>Logical duplicates may exist when multiple complaints report the same issue. These were not removed since they reflect real repeated requests rather than errors.</p>
+                
+                <figure>
+                    <img src="duplicate_percentage.png" alt="Duplicate Records Percentage">
+                    <figcaption>Figure 7.1: Low proportion of exact duplicates confirms strong data integrity.</figcaption>
+                </figure>
+            </div>
+            
+            <div id="section8" class="section">
+                <div class="section-number">Section 8</div>
+                <h2>Univariate Analysis (Column-Level Statistics)</h2>
+                
+                <h3>Numerical Variables</h3>
+                <p>We focused on response time (in hours) and location coordinates.</p>
+                <p>Response time is skewed: most complaints are resolved quickly, but a few take much longer. These outliers raise the mean above the median.</p>
+                <p>Coordinates mostly fall within NYC, with a few invalid or missing values handled during cleaning.</p>
+                
+                <figure>
+                    <img src="response_time_distribution.png" alt="Response Time Distribution">
+                    <figcaption>Figure 8.1: Distribution of response times, showing most complaints resolved quickly and a few taking longer.</figcaption>
+                </figure>
+                
+                <h3>Categorical Variables</h3>
+                <p>Complaint type, borough, and status show imbalance.</p>
+                <p>Some complaint types make up most requests, while many appear rarely. Brooklyn and Queens have the most complaints.</p>
+                <p>Rare categories were kept because they give insight into less common service issues.</p>
+                
+                <figure>
+                    <img src="top_complaint_types.png" alt="Top Complaint Types">
+                    <figcaption>Figure 8.2: Most common complaint types, with a long-tail distribution.</figcaption>
+                </figure>
+                
+                <figure>
+                    <img src="borough_distribution.png" alt="Complaint Distribution by Borough">
+                    <figcaption>Figure 8.3: Complaint volume by borough, with Brooklyn and Queens reporting the most.</figcaption>
+                </figure>
+                
+                <h3>Datetime Variables</h3>
+                <p>Date and time fields cover multiple years, suitable for daily and hourly trends. Some gaps existed due to missing or malformed timestamps, but overall the timeline is reliable after cleaning.</p>
+                
+                <figure>
+                    <img src="complaints_over_time.png" alt="Complaints Over Time">
+                    <figcaption>Figure 8.4: Trends in complaint volume over time, showing multi-year coverage.</figcaption>
+                </figure>
+            </div>
+
+            <div id="section9" class="section">
+                <div class="section-number">Section 9</div>
+                <h2>Value Distribution and Frequency Analysis</h2>
+                <p>We looked at how often different values appear in the dataset. Complaint types and descriptors follow a “long-tail” pattern: a few types account for most complaints, while many occur only rarely.</p>
+                <p>Response time shows many very short durations, with a few extreme cases taking much longer. There were no columns that stayed constant or nearly constant throughout.</p>
+            </div>
+            
+            <div id="section10" class="section">
+                <div class="section-number">Section 10</div>
+                <h2>Outlier and Anomaly Detection</h2>
+                
+                <figure>
+                    <img src="response_time_boxplot.png" alt="Response Time Boxplot">
+                    <figcaption>Figure 10.1: Response time boxplot showing some extreme outliers, representing unusually long resolution periods that were kept as real delays.</figcaption>
+                </figure>
+                
+                <p>We used the interquartile range (IQR) method to flag outliers in numeric fields.</p>
+                <p>Most response times were reasonable, but a few extreme cases were retained as they reflect real operational delays rather than errors.</p>
+                <p>Geographic anomalies were very few after removing invalid coordinates.</p>
+            </div>
+            
+            <div id="section11" class="section">
+                <div class="section-number">Section 11</div>
+                <h2>Data Consistency and Validity Checks</h2>
+                <p>We ran checks to ensure data is internally consistent.</p>
+                <p>Borough names were standardized, capitalization issues fixed, and temporal logic verified (closed dates never precede created dates). Records that broke these rules were excluded from response-time calculations.</p>
+                <p>After cleaning, there were no major inconsistencies or invalid values remaining.</p>
+            </div>
+            
+            <div id="section12" class="section">
+                <div class="section-number">Section 12</div>
+                <h2>Correlation and Relationship Analysis</h2>
+                <p>We checked correlations among numeric variables.</p>
+                <p>Response time had weak to moderate relationships with some temporal features. No strong multicollinearity was found, meaning the dataset is suitable for regression modeling after selecting features carefully.</p>
+                <p>Relationships between numeric and categorical variables were explored through grouped summaries rather than correlation coefficients.</p>
+                
+                <figure>
+                    <img src="correlation_heatmap.png" alt="Correlation Matrix Heatmap">
+                    <figcaption>Figure 12.1: Heatmap showing low multicollinearity and moderate relationships, confirming the dataset is ready for predictive modeling.</figcaption>
+                </figure>
+            </div>
+            
+            <div id="section13" class="section">
+                <div class="section-number">Section 13</div>
+                <h2>Target Variable Analysis</h2>
+                <p>Response time was treated as the target for modeling.</p>
+                <p>It is skewed and variable, so transformations and careful handling of missing values are needed. No evidence of target leakage was found.</p>
+            </div>
+            
+            <div id="section14" class="section">
+                <div class="section-number">Section 14</div>
+                <h2>Data Quality Summary</h2>
+                
+                <figure>
+                    <img src="data_quality_summary.png" alt="Data Quality Summary">
+                    <figcaption>Figure 14.1: Overall data quality, showing strong uniqueness and validity, with moderate completeness and consistency.</figcaption>
+                </figure>
+                
+                <p>Overall, the dataset is clean and reliable after preprocessing.</p>
+                <p>Uniqueness and validity are high, completeness is moderate, and consistency is acceptable. There are no major issues blocking analysis, though a few minor assumptions were needed.</p>
+            </div>
+            
+            <div id="section15" class="section">
+                <div class="section-number">Section 15</div>
+                <h2>Risks, Limitations, and Assumptions</h2>
+                <p>Limitations include working with a sampled subset instead of the full dataset, missing closure info for open complaints, and reporting bias across boroughs and complaint types.</p>
+                <p>We made assumptions about handling missing data, keeping outliers, and temporal validity during analysis.</p>
+            </div>
+            
+            <div id="section16" class="section">
+                <div class="section-number">Section 16</div>
+                <h2>Recommendations and Next Steps</h2>
+                <p>Next steps could include creating features from time patterns, aggregating data by borough or complaint type, and transforming skewed numeric fields if needed.</p>
+                <p>This dataset is ready for exploratory analysis, basic statistical modeling, and introductory machine learning experiments. It is not suitable for real-time production without further validation.</p>
+            </div>
+            
+            <div id="section17" class="section">
+                <div class="section-number">Section 17</div>
+                <h2>Appendix</h2>
+                <p>This profiling was done using Python-based exploratory analysis, combining automated summaries with manual checks. Standard statistical and visualization methods were applied consistently.</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p><strong>Generated Using:</strong> Python, pandas, SQLite, and visualization libraries in a Jupyter Notebook</p>
+            <p><strong>Date Generated:</strong> January 2024</p>
+            <p><strong>Intended Use:</strong> Academic analysis only</p>
+            <p><strong>Data Source:</strong> NYC Open Data / Kaggle</p>
+        </footer>
+    </div>
+</body>
+</html>
